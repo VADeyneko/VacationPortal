@@ -77,8 +77,9 @@ public class RequestServlet   extends AbstractServlet{
             fillDropDownControls();
             forward("request/" + action);
         }
-         
-        forward("request/" + objListPath);
+         else { 
+       forward("request/" + objListPath);
+         }
     }
     
     
