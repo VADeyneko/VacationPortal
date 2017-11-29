@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 import model.User;
 import static forms.core.Validation.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.ResourceBundle;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -25,10 +27,11 @@ import model.UserGroup;
 @RequestScoped
 public class UserForm implements Convertable<User> {
 
-    private static final ResourceBundle ERRORS;
+    private static final ResourceBundle ERRORS, LABELS;
     
     static {
         ERRORS = ResourceBundle.getBundle("resources.errors");
+        LABELS = ResourceBundle.getBundle("resources.labels");
     }
     
     @Inject
@@ -142,13 +145,25 @@ public class UserForm implements Convertable<User> {
                user.setManager(manager);
                
                service.update(user);
-               service.singIn(credentials);
+              
+               if(service.getAuthUser() == user)
+                    service.singIn(credentials);
     }
    
     protected String errorMessage(String name) {
         return ERRORS.getString(name);
     }  
     
+    public LinkedHashMap<String, String> getDetailSummary(User obj){
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        map.put(LABELS.getString("label.name"), obj.getName());
+        map.put(LABELS.getString("label.lastname"), obj.getLastname());
+        map.put(LABELS.getString("label.email"), obj.getCredentials().getEmail());
+        map.put(LABELS.getString("label.usergroup"), obj.getUserGroup().getGroupLabelName());
+            if(obj.getManager()!= null) 
+              map.put(LABELS.getString("label.manager"), obj.getManager().getFullName());        
+        return map;
+    }
     
     private Object parseParameter(AbstractDao dao,   String paramName) {
         String param = request.getParameter(paramName);
@@ -161,5 +176,5 @@ public class UserForm implements Convertable<User> {
         }
     }
 
-    
+        
 }

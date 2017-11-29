@@ -35,21 +35,17 @@
     <fmt:message key="label.manager" />
 </c:set>
 
- 
-
- 
-
     <common:error/>
     
   <common:topmenu/>
-  <form action="<%= request.getContextPath()%>/${actionForUser}?id=${userToEdit.id}"  method="post"  class="col-sm-9 c col-md-10 main ">
+  <form action="<%= request.getContextPath()%>/${action}?id=${objToEdit.id}"  method="post"  class="col-sm-9 c col-md-10 main ">
    <div class="form-group ">
     <input type="text"
            name="name"
            ${dsbl_all}
            class="form-control"
            placeholder="${namePlaceholder}"
-           value="${userToEdit.name}"
+           value="${objToEdit.name}"
            required>
      </div> 
     <div class="form-group">
@@ -58,7 +54,7 @@
            ${dsbl_all}
            class="form-control"
            placeholder="${lastnamePlaceholder}"
-           value="${userToEdit.lastname}"
+           value="${objToEdit.lastname}"
            required>
     </div>
            
@@ -68,7 +64,7 @@
            ${dsbl_all}
            class="form-control"
            placeholder="${emailPlaceholder}"
-           value="${userToEdit.credentials.email}"
+           value="${objToEdit.credentials.email}"
            required>
      </div>
            
@@ -78,7 +74,7 @@
             ${dsbl_all}
            class="form-control"
            placeholder="${passwordPlaceholder}"           
-           value="${userToEdit.credentials.password}"
+           value="${objToEdit.credentials.password}"
            required>
     </div>
            
@@ -88,7 +84,7 @@
             ${dsbl_all}
            class="form-control"
            placeholder="${passwordConfirmationPlaceholder}"
-           value="${userToEdit.credentials.password}"
+           value="${objToEdit.credentials.password}"
            required>    
     </div>
  
@@ -97,7 +93,7 @@
         <label for="Select1" >${userGroupLabelName} :</label>         
         <select  id="Select1" class="form-control"    ${dsbl_all}  name="userGroup"   >
          <c:forEach var="userGroup"  items="${userGroupList}">                      
-            <option value="${userGroup.id}" ${userGroup.id == userToEdit.userGroup.id ? 'selected="selected"' : ''}>${userGroup.groupLabelName}</option>
+            <option value="${userGroup.id}" ${userGroup.id == objToEdit.userGroup.id ? 'selected="selected"' : ''}>${userGroup.groupLabelName}</option>
          </c:forEach>
         </select>             
     </div>      
@@ -106,14 +102,14 @@
         <label for="Select2" >${managerSelectLabelName} :</label>         
         <select  id="Select2" class="form-control"    ${dsbl_all}  name="manager"  >
          <c:forEach var="manager"  items="${managerList}">                      
-            <option value="${manager.id}" ${manager.id == userToEdit.manager.id ? 'selected="selected"' : ''}>${manager.getFullName()}</option>
+            <option value="${manager.id}" ${manager.id == objToEdit.manager.id ? 'selected="selected"' : ''}>${manager.getFullName()}</option>
          </c:forEach>
         </select>             
     </div>          
         
     <button class="btn">
-        <fmt:message key="label.${actionForUser.substring(4).toLowerCase()}"/>
-    </button>
+        <fmt:message key="label.${action.toLowerCase().substring(4)}"/>
+    </button>     
      
-        <a onclick="javascript:history.back(); return false;"> <fmt:message key="label.back"/></a>
+    <a onclick="javascript:history.back(); return false;"> <fmt:message key="label.back"/></a>
 </form>

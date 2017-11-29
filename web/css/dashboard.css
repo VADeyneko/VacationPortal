@@ -72,7 +72,7 @@ body {
  */
 
 .main {
-  padding: 20px;
+  padding: 15px;
 }
 @media (min-width: 768px) {
   .main {

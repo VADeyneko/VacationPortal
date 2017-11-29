@@ -17,7 +17,7 @@ import javax.validation.ValidationException;
 import model.User;
 import model.UserGroup;
 
-@WebServlet(urlPatterns = {"/userManagement", "/userEdit", "/userDelete", "/userInsert"})
+@WebServlet(urlPatterns = {"/userManagement", "/userEdit", "/userDelete", "/userInsert", "/userDetails"})
 public class UserManagementServlet extends AbstractServlet {
 
     @Inject
@@ -32,12 +32,15 @@ public class UserManagementServlet extends AbstractServlet {
     @Inject
     protected UserForm form;
     
-    private String action, objListPath = "userManagement";
+    private String action;
+    private final String objListPath = "userManagement";
+    private final String formType ="user";
 
     @Override
     protected void doGet() throws ServletException, IOException {
 
         action = request.getServletPath().substring(1);
+        request.setAttribute("formType", formType );     
 
         //если не авторизован - иди вводи пароль
         if (!service.isAuth()) {
@@ -46,22 +49,21 @@ public class UserManagementServlet extends AbstractServlet {
 
         //если не userManagement , то значит CRUD операция
         if (!action.equals(objListPath)) {
-
-            if (request.getParameter("id") != null) {
-                User userToEdit = service.findById(form.getId());
-                request.setAttribute("userToEdit", userToEdit);
-                request.setAttribute("dsbl_all", action.equals("userDelete") ? "disabled": ""); //управление доступностью ВСЕХ полей для удаления
-                request.setAttribute("actionForUser", action);
-               } else {
-                request.setAttribute("actionForUser", action); // остается только Insert
-            }
+             fillDropDownControls();           
+             request.setAttribute("action", action);     
+             
+            if (request.getParameter("id") != null) { //для редактирования и удаления
+                User objToEdit = service.findById(form.getId());
+                request.setAttribute("objToEdit", objToEdit);
+                request.setAttribute("dsbl_all", action.equals(formType+"Delete") ? "disabled": ""); //управление доступностью ВСЕХ полей для удаления
+                request.setAttribute("detailsCollection", form.getDetailSummary(objToEdit));                   
+               }  
             
-            fillDropDownControls();
-            forward("auth/" + action);
-        }
-
-        forward("auth/" + objListPath);            // по умолчанию будет основной список         
-
+            forward("actions/" + action.substring(4) );
+             
+        }  else {              
+        forward("auth/" + objListPath);      // по умолчанию будет основной список  
+        }       
     }
 
     @Override
@@ -69,7 +71,7 @@ public class UserManagementServlet extends AbstractServlet {
 
         action = request.getServletPath().substring(1);
 
-        if (action.equals("userEdit")) {
+        if (action.equals(formType + "Edit")) {
             User userToSave = service.findById(form.getId());
             try {
                 form.validateAndUpdate(userToSave);
@@ -82,7 +84,7 @@ public class UserManagementServlet extends AbstractServlet {
             }         
         }
 
-        if (action.equals("userDelete")) {
+        if (action.equals(formType +"Delete")) {
             User userToSave = service.findById(form.getId());
             try{
             service.delete(userToSave);
@@ -92,7 +94,7 @@ public class UserManagementServlet extends AbstractServlet {
             }
         }
 
-        if (action.equals("userInsert")) {
+        if (action.equals(formType +"Insert")) {
             try {
                 User user = form.convertTo(User.class);
                 service.register(user);
@@ -113,7 +115,7 @@ public class UserManagementServlet extends AbstractServlet {
 
     @Override
     public void init() throws ServletException {
-        getServletContext().setAttribute("userlist", service.findAll());       
+        getServletContext().setAttribute(formType +"list", service.findAll());       
     }
     
     //Заполнение выпадающих списков формы

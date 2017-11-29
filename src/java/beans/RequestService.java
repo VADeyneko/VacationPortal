@@ -13,6 +13,8 @@ import model.Request;
 @RequestScoped
 public class RequestService  implements Serializable{
     
+    
+    
     protected @EJB RequestDao dao;
     
     public void register(Request rqst) throws PrimaryKeyViolationException {        
@@ -25,6 +27,10 @@ public class RequestService  implements Serializable{
     
     public void delete(Request request) {
         dao.delete(request);
+    }
+    
+    public void update (Request request) {
+        dao.update(request);
     }
        
 }

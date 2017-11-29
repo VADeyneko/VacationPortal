@@ -37,9 +37,7 @@
            required> 
    </div>
            
-    <a href="<%= request.getContextPath() %>/registration">
-        <fmt:message key="label.registration"/>
-    </a> 
+ 
 
     <button class="btn btn-default ">
         <fmt:message key="label.sign-in"/>

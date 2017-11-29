@@ -14,9 +14,8 @@ import dao.RequestStateDao;
 import dao.VacationTypeDao;
 import exceptions.PrimaryKeyViolationException;
 import forms.RequestForm;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.validation.ValidationException;
 import model.Request;
@@ -24,17 +23,17 @@ import model.RequestState;
 import model.User;
 import model.VacationType;
 
-@WebServlet(urlPatterns = {"/requestList", "/requestEdit", "/requestDelete", "/requestInsert"})
+@WebServlet(urlPatterns = {"/requestList", "/requestEdit", "/requestDelete", "/requestInsert", "/requestDetails"})
 public class RequestServlet   extends AbstractServlet{
     
     @Inject
     protected HttpServletRequest request;
     
     @Inject
-    protected RequestService requestService;
+    protected RequestService service;
     
     @Inject
-    protected UserService service;
+    protected UserService userService;
     
     @Inject
     protected RequestForm form;
@@ -46,50 +45,68 @@ public class RequestServlet   extends AbstractServlet{
     protected @EJB RequestStateDao requestStateDao;
     
     
-    private String action;
     private   User requestOwner;
     
-    private String objListPath = "requestList";
+    private String action;
+    private final String objListPath = "requestList";
+    private final String formType ="request";    
+    
 
     @Override
     protected void doGet() throws ServletException, IOException {
-          action = request.getServletPath().substring(1);
+         action = request.getServletPath().substring(1);
+         request.setAttribute("formType", formType );    
 
         //если не авторизован - иди вводи пароль
-        if (!service.isAuth()) {
+        if (!userService.isAuth()) {
             forward("auth/login");
         } else {
-            requestOwner  = service.getAuthUser();
+            requestOwner  = userService.getAuthUser();
             request.setAttribute("reqOwner",requestOwner);
         }
                 
+        
+        
          if (!action.equals(objListPath)) {
-
-            if (request.getParameter("id") != null) {
-                Request objToEdit = requestService.findById( Long.parseLong(request.getParameter("id")  ) ) ;
-                request.setAttribute("objToEdit", objToEdit);
-                request.setAttribute("dsbl_all", action.equals("requestDelete") ? "disabled": ""); //управление доступностью ВСЕХ полей для удаления
-                request.setAttribute("action", action);
-                } else {
-                request.setAttribute("action", action); // остается только Insert
-            }
-            
             fillDropDownControls();
-            forward("request/" + action);
-        }
-         else { 
-       forward("request/" + objListPath);
-         }
+            request.setAttribute("action", action);     
+             request.setAttribute("newRequestDefaultDate", Request.getNewRequestDefaultDate());  //зададит текущую дату для инициализации календаря. иначе при "сохранении" будет ошибка
+            
+           if (request.getParameter("id") != null) { //для редактирования и удаления
+                Request objToEdit = service.findById(form.getId());
+                request.setAttribute("objToEdit", objToEdit);
+                //request.setAttribute("formattedDate", objToEdit.getFormatedDateBegin());
+                request.setAttribute("dsbl_all", action.equals(formType+"Delete") ? "disabled": ""); //управление доступностью ВСЕХ полей для удаления
+                request.setAttribute("detailsCollection", form.getDetailSummary(objToEdit));                   
+               }  
+           
+            
+            forward("actions/" + action.substring(7) );
+             
+        }  else {              
+        forward("request/" + objListPath);      // по умолчанию будет основной список  
+        }       
     }
     
     
     @Override
     protected void doPost() throws ServletException, IOException {
+        action = request.getServletPath().substring(1);    
+        
+          if (action.equals(formType + "Edit")) {
+            Request objToSave = service.findById(form.getId());
+            try {
+                form.validateAndUpdate(objToSave);
+            } catch (ValidationException d ) {
+                request.setAttribute("error", d.getLocalizedMessage());
+                doGet();
+          }       
+        }
     
-          if (action.equals("requestInsert")) {              
+          if (action.equals(formType+"Insert")) {              
             try {
                 Request req = form.convertTo(Request.class);
-                requestService.register(req);
+                service.register(req);
 
             } catch (ValidationException d) {
                 request.setAttribute("error", d.getLocalizedMessage());
@@ -101,10 +118,10 @@ public class RequestServlet   extends AbstractServlet{
             
         }  
           
-        if (action.contains("requestDelete")) {
-            Request req = requestService.findById(form.getId());
+        if (action.contains(formType+"Delete")) {
+            Request req = service.findById(form.getId());
            try{
-            requestService.delete(req);
+            service.delete(req);
             } catch (Exception e){
                  request.setAttribute("error", errorMessage("error.integrety-exception-fkrecords-found"));
                  doGet();
@@ -117,20 +134,28 @@ public class RequestServlet   extends AbstractServlet{
 
     @Override
     public void init() throws ServletException {
-        getServletContext().setAttribute("requestList", dao.all());       
+        getServletContext().setAttribute(formType+"List", dao.all());       
     }
     
         
     //Заполнение выпадающих списков формы
     private void fillDropDownControls(){             
-            List<User> userList = service.findAll();      //передаем перечень групп для вып. списка   
+            List<User> userList = new ArrayList<User>();      
+            userList.add(requestOwner); //Без вариантов только один создатель
             request.setAttribute("userList", userList);         
             
          
             
             List<RequestState> requestStateList = requestStateDao.getInitialStateList();
-            request.setAttribute("requestStateList", requestStateList);     
             
+            //Если вставка, то будет доступен ТОЛЬКО ОДИН вариант. Иначе - два
+            if(action.equals(formType+"Insert")){
+             requestStateList.remove(1);
+                 request.setAttribute("requestStateList",requestStateList );  
+            }else{                
+            request.setAttribute("requestStateList", requestStateList);  
+            }
+             
             List<VacationType> vacationTypeList = vacationTypeDao.all();
             request.setAttribute("vacationTypeList", vacationTypeList);    
     }

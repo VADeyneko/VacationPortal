@@ -39,7 +39,7 @@ public final class Validation {
     
     public static void assertDate(String textDate) throws ValidationException {
         try{
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-mm-yyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
         java.util.Date utilDate = formatter.parse(textDate);
         java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());      
         }

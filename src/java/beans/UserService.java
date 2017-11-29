@@ -75,8 +75,8 @@ public class UserService implements Serializable {
 
     public void update(User user) {
         dao.update(user);
-        this.user = user;
-        
+       if(this.user.getCredentials() == user.getCredentials())
+                 this.user = user;        
     }
 
     public void delete(User user) {

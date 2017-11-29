@@ -39,92 +39,117 @@
     <common:error/>
     
   <common:topmenu/>
-  <form action="<%= request.getContextPath()%>/${action}?id=${objToEdit.id}"   method="post"  class="col-sm-9 c col-md-10 main ">
-   <div class="form-group row">
-       <div class="col-xs-6">           
-           <label for="datepicker_dBegin">${requestDateBegin_header}</label>
-            <input type="text" id="datepicker_dBegin"  
-                   name="dateBegin"           
-                   ${dsbl_all}  readonly="true"
+ 
+			
+  <form action="<%= request.getContextPath()%>/${action}?id=${objToEdit.id}"   method="post"  class="form-horizontal col-sm-12 c col-md-12 main ">      			      
+    <div class="form-group ">
+       
+        <div class="col-xs-6">       
+            <div class="form-group  col-xs-12">
+          
+            <label   for="datepicker_dBegin">${requestDateBegin_header}</label>
+           
+           <div >
+           <input type="text" id="datepicker_dBegin"    
+                   name="dateBegin"     readonly="true"
+                     
+                   ${dsbl_all}     
                    class="form-control"
                    placeholder="${requestDateBegin_header}"
-                   value="${objToEdit.dateBegin}"
+                   value="${action.contains ("requestInsert") ? newRequestDefaultDate  : objToEdit.getFormatedDateBegin()}"
                    required>
-        </div>
-        <div class="col-xs-6">    
-         <label for="datepicker_dEnd">${requestDateEnd_header}</label>
-        <input type="text" id="datepicker_dEnd" 
-               name="dateEnd"           
-               ${dsbl_all} readonly="true"
+            </div>
+     </div> 
+      <div class="form-group  col-xs-12">              
+      <label   for="datepicker_dEnd">${requestDateEnd_header}</label> 
+         <div  >
+         <input type="text" id="datepicker_dEnd"   
+               name="dateEnd"    readonly="true"         
+               ${dsbl_all}    
                class="form-control"
                placeholder="${requestDateEnd_header}"
-               value="${objToEdit.dateEnd}"
+               value=value="${action.contains ("requestInsert") ? newRequestDefaultDate  : objToEdit.getFormatedDateEnd()}" 
                required>
-     </div> 
+         </div> 
+      </div>     
+               
+        <div class="form-group col-xs-12" >   
+               <label for="Select4"  class=" control-label ">${vacationType_header} :</label>         
+        <select  id="Select4" class="form-control col-xs-6"    ${dsbl_all}  name="vacationType"  >
+         <c:forEach var="type"  items="${vacationTypeList}">                      
+            <option value="${type.id}" ${type.id == objToEdit.vacationType.getId()  ? 'selected="selected"' : ''}>${type.name}</option>
+         </c:forEach>
+        </select>                     
+      </div>
+         
+
+      <div class="form-group col-xs-12" >    
+        <label for="Select3" >${requestState_header} :</label>         
+        <select  id="Select3" class="form-control"  readonly="true"  ${dsbl_all}  name="requestState"  >
+         <c:forEach var="state"  items="${requestStateList}">                      
+            <option  ${action != "requestInsert"  ? 'disabled="disabled"' : ''}  value="${state.id}" ${state.id == objToEdit.requestState.getId() ? 'selected="selected"' : ''}>${state.name}</option>
+         </c:forEach>
+        </select>             
+    </div>   
+         
+      </div>         
+       
+      <%--КАЛЕНДАРИК --%>         
+      <div class="col-xs-6  "  id="date-range0-container" > </div>	
+      
    </div>    
+        
                
+   
                
-     <div class="form-group" >    
+   
+  
+     
+     <div class="form-group ">    
+    <label for="managerComment">${requestManagerComment_header}</label>      
+     <textarea  rows="1"
+           id="managerComment1" 
+           name="managerComment"
+           ${dsbl_all} 
+           class="form-control"                  
+           >${objToEdit.managerComment} 
+     </textarea>            
+     </div>     
+
+     <div class="form-group ">    
+     <label for="ownerComment">${requestOwnerComment_header}</label>
+     <textarea  rows="1"
+           id="ownerComment1" 
+           name="ownerComment"
+           ${dsbl_all} 
+           class="form-control"
+           placeholder="${requestOwnerComment_header}"            
+           >${objToEdit.ownerComment} 
+     </textarea>     
+     </div>           
+           
+          <div class="form-group " >    
         <label for="Select2" >${requestManager_header} :</label>         
         <select  id="Select2" class="form-control"    ${dsbl_all}   name="requestManager"  >
          <c:forEach var="manager"  items="${userList}">                      
             <option value="${manager.id}" ${manager.id == reqOwner.manager.getId() ? 'selected="selected"' : ''}>${manager.getFullName()}</option>
          </c:forEach>
         </select>             
-    </div>              
-     <div class="form-group" >    
-        <label for="Select3" >${requestState_header} :</label>         
-        <select  id="Select3" class="form-control"    ${dsbl_all}  name="requestState"  >
-         <c:forEach var="state"  items="${requestStateList}">                      
-            <option value="${state.id}" ${state.id == objToEdit.requestState.getId() ? 'selected="selected"' : ''}>${state.name}</option>
-         </c:forEach>
-        </select>             
-    </div>      
-         
-    <div class="form-group" >    
-        <label for="Select4" >${vacationType_header} :</label>         
-        <select  id="Select4" class="form-control"    ${dsbl_all}  name="vacationType"  >
-         <c:forEach var="type"  items="${vacationTypeList}">                      
-            <option value="${type.id}" ${type.id == objToEdit.vacationType.getId()  ? 'selected="selected"' : ''}>${type.name}</option>
-         </c:forEach>
-        </select>             
     </div>     
-         
-     <div class="form-group ">    
-     <label for="ownerComment">${requestOwnerComment_header}</label>
-     <textarea  rows="1"
-           id="ownercomment"
-           name="ownerComment"
-           ${dsbl_all} 
-           class="form-control"
-           placeholder="${requestOwnerComment_header}"
-           value="${objToEdit.ownerComment}"
-           >
-     </textarea>
-     
-     </div>        
-     <div class="form-group ">       
-     <input type="text"
-           name="managerComment"
-           ${dsbl_all}
-           class="form-control"
-           placeholder="${requestManagerComment_header}"
-           value="${objToEdit.managerComment}"
-           >
-     </div>               
+                 
      <div class="form-group" >    
         <label for="Select1" >${requestOwner_header} :</label>         
-        <select  id="Select1" class="form-control"     name="requestOwner"   >
+        <select  id="Select1" class="form-control"  readonly="true"    name="requestOwner"    >
          <c:forEach var="requestOwner"  items="${userList}">                      
-             <option value="${requestOwner.id}" ${requestOwner.id == reqOwner.getId() ? 'selected="selected"' : ''}>${requestOwner.getFullName()}</option>
+             <option   ${action != "requestInsert"  ? 'disabled="disabled"' : ''} value="${requestOwner.id}" ${requestOwner.id == reqOwner.getId() ? 'selected="selected"' : ''}>${requestOwner.getFullName()}</option>
          </c:forEach>
         </select>             
     </div>      
-        
-        
-    <button class="btn">
+     
+         <button class="btn">
         <fmt:message key="label.apply"/>
-    </button>
+         </button>
      
         <a onclick="javascript:history.back(); return false;"> <fmt:message key="label.back"/></a>
+ 
 </form>

@@ -1,5 +1,6 @@
 package forms;
 
+import beans.RequestService;
 import dao.AbstractDao;
 import dao.RequestStateDao;
 import dao.UserDao;
@@ -16,6 +17,9 @@ import model.User;
 import static forms.core.Validation.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.LinkedHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import model.RequestState;
@@ -29,14 +33,18 @@ import model.VacationType;
 @RequestScoped
 public class RequestForm implements Convertable<Request> {
 
-    private static final ResourceBundle ERRORS;
+    private static final ResourceBundle ERRORS, LABELS;
 
     static {
         ERRORS = ResourceBundle.getBundle("resources.errors");
+         LABELS = ResourceBundle.getBundle("resources.labels");
     }
 
     @Inject
     protected HttpServletRequest request;
+    
+    @Inject
+    protected RequestService service;
 
     protected @EJB
     UserDao dao;
@@ -69,8 +77,7 @@ public class RequestForm implements Convertable<Request> {
         requestState = request.getParameter("requestState");
         ownerComment = request.getParameter("ownerComment");
         managerComment = request.getParameter("managerComment");
-        
-                
+             
       if (!request.getParameter("id").equals("") )
                 id = Long.parseLong(request.getParameter("id"));      
     }
@@ -114,17 +121,28 @@ public class RequestForm implements Convertable<Request> {
         assertDate(dateBegin);
         assertDate(dateEnd);
     }
+    
+    public void validateAndUpdate(Request request) throws ValidationException{
+        Request reqConv = convertTo(Request.class);
+        request.updateWithRequest(reqConv);
+        reqConv= null;// обнуляем ссылку для GC
+                
+        service.update(request);        
+    }
 
     @Override
-    public Request convertTo(Class<Request> cls) throws ValidationException {
+    public Request convertTo(Class<Request> cls) throws ValidationException {            
+        
         validate();
         User managerConvert = (User) parseParameter(dao, "requestManager");
         User ownerConvert = (User) parseParameter(dao,   "requestOwner");
-        java.sql.Date dateBeginConvert = getDate(dateBegin);
+           java.sql.Date dateBeginConvert = getDate(dateBegin);
         java.sql.Date dateEndConvert = getDate(dateEnd);
         VacationType vacationTypeConvert = (VacationType) parseParameter(vacationTypeDao,  "vacationType");
         RequestState requestStateConvert = (RequestState) parseParameter(requestStateDao,  "requestState");
 
+                  
+  
         return new Request(ownerConvert,
                 managerConvert,
                 dateBeginConvert,
@@ -133,6 +151,21 @@ public class RequestForm implements Convertable<Request> {
                 vacationTypeConvert,
                 ownerComment,
                 managerComment);
+    }
+    
+    
+   public LinkedHashMap<String, String> getDetailSummary(Request obj){
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        map.put(LABELS.getString("label.requestOwner_header"), obj.getOwner().getFullName());
+        map.put(LABELS.getString("label.requestManager_header"), obj.getManager().getFullName());
+        map.put(LABELS.getString("label.requestDateBegin_header"), obj.getDateBegin().toString());
+        map.put(LABELS.getString("label.requestDateEnd_header"), obj.getDateEnd().toString());        
+        map.put(LABELS.getString("label.requestState_header"), obj.getRequestState().getName());
+        map.put(LABELS.getString("label.vacationType_header"), obj.getVacationType().getName());
+        map.put(LABELS.getString("label.ownerComment_header"), obj.getOwnerComment());  
+        map.put(LABELS.getString("label.managerComment_header"), obj.getManagerComment());          
+           
+        return map;
     }
 
     private Object parseParameter(AbstractDao dao,   String paramName) {
@@ -147,14 +180,28 @@ public class RequestForm implements Convertable<Request> {
     }
 
     private java.sql.Date getDate(String textDate) throws ValidationException {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+
+            formatter.applyPattern("dd.MM.yyyy");
+            
+            Logger log = Logger.getLogger("forms.RequestForm");      
+            
+            log.log(Level.INFO, "aa   " +  textDate);
+                  
+            log.log(Level.INFO, "bb   " +  formatter.toPattern());
         try {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-mm-yyyy");
-            java.util.Date utilDate = formatter.parse(textDate);
+
+            
+             java.util.Date utilDate = formatter.parse(textDate);
+
+             
             java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+              log.log(Level.INFO, "bccb   " +  sqlDate.toString());
             return sqlDate;
         } catch (IllegalArgumentException | ParseException e) {
-            throw new ValidationException(ERRORS.getString("error.validation.wrong-date"));
+             throw new ValidationException(ERRORS.getString("error.validation.wrong-date" ));
         }
+       
     }
 
 }

@@ -47,42 +47,28 @@
     <h3>${title}</h3>
     
 
-
-    <table class="table table-hover">
+    <div><forms:insert/></div>
+    <table class="table table-hover ">
          <thead>
-            <tr>               
-                <th>${requestOwner_header}</th>
-                <th>${requestManager_header}</th>
-                <th>${requestDateBegin_header}</th>
+            <tr>   
+                 <th>${vacationType_header}</th>
+                 <th>${requestDateBegin_header}</th>
                 <th>${requestDateEnd_header}</th>
-                <th>${requestState_header}</th>
-                <th>${vacationType_header}</th>
-               <th>   </th>
+                  <th>${requestState_header}</th>
+                <th>${requestManager_header}</th>               
+        
             </tr>
           </thead>
            <tbody>
-               <tr>
-                   <td> <a href="requestInsert">   Создать</a>    </td>
-                   <td>...</td>
-                   <td>...</td>
-                   <td>...</td>
-                   <td>...</td>
-                   <td>...</td>                   
-               </tr>
+
                   <c:forEach var="rqst" items="${requestList}">
                 <tr>
-                      <td> ${rqst.owner.getFullName()} </td>
-                      <td> ${rqst.manager.getFullName()} </td>
-                      <td> ${rqst.dateBegin} </td>
-                      <td> ${rqst.dateEnd} </td>
-                      <td> ${rqst.requestState.getName()} </td>
-                      <td> ${rqst.vacationType.getName()} </td>
-                  <td>   <a href="requestEdit?id=${rqst.id}">
-                                     Редактировать</a> |  
-                     <a href="requestDelete?id=${rqst.id}">
-                                     Удалить</a> 
-                  </td>      
-                  
+                    <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.vacationType.getName()} </a>  </td>
+                    <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.getFormatedDateBegin()} </a>  </td>
+                    <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.getFormatedDateEnd()} </a>  </td>
+                    <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.requestState.getName()} </a>  </td>                    
+                     <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.manager.getFullName()} </a>  </td>     
+                   
                 </tr>
                   </c:forEach>
        </tbody>           

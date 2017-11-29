@@ -28,11 +28,11 @@
 <common:layout title="${title}">
     
 
-    <jsp:body>
+       <jsp:body>
         <common:topmenu/>
     <h3>${title}</h3>
     
-
+    <div><forms:insert/></div>
 
     <table class="table table-hover">
          <thead>
@@ -40,28 +40,19 @@
               <th>${name_table_header}</th>
               <th>${lastname_table_header}</th>
               <th>${email_table_header}</th>
-               <th>   </th>
+               <th> Менеджер  </th>
+               <th> Роль </th>
             </tr>
           </thead>
-           <tbody>
-               <tr>
-                   <td><forms:insert/></td>
-                   <td>...</td>
-                   <td>...</td>
-                   <td>...</td>
-               </tr>
+           <tbody>            
                   <c:forEach var="users" items="${userlist}">
                 <tr>
-                  <td> ${users.name}</td>
-                  <td> ${users.lastname} </td>
-                  <td>${users.credentials.email}</td>
-                  <td>   <a href="userEdit?id=${users.id}">
-                                     Редактировать</a> |  
-                     <a href="userDelete?id=${users.id}">
-                                     Удалить</a>   
-                           
-                  </td>      
-                  
+                  <td> <a href="${formType}Details?id=${users.id}"> ${users.name} </a>  </td>
+                  <td> <a href="${formType}Details?id=${users.id}"> ${users.lastname} </a>  </td>   
+                  <td> <a href="${formType}Details?id=${users.id}"> ${users.credentials.email} </a>  </td>                    
+                  <td> <a href="${formType}Details?id=${users.id}"> ${users.getManager().getFullName()} </a>  </td>                    
+                  <td> <a href="${formType}Details?id=${users.id}"> ${users.getUserGroup().getGroupLabelName()} </a>  </td>                    
+                          
                 </tr>
                   </c:forEach>
        </tbody>           

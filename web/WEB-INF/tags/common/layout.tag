@@ -16,20 +16,16 @@
          <link href="css/styles.css" rel="stylesheet">
           <link href="css/dashboard.css" rel="stylesheet">
           <link href="css/jquery-ui.css" rel="stylesheet">
+          <link href="css/daterangepicker.css" rel="stylesheet">
     </head>
     <body>
         <script src="js/jquery-3.2.1.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
-        <script src="js/jquery-ui.min.js"></script> 
+        <script src="js/moment.js"></script>             
+        <script src="js/jquery-ui.min.js"></script>             
+        <script src="js/jquery.daterangepicker.min.js"></script>  
+        <script src="js/calendarCustom.js"></script>    
         
-<script type="text/javascript">
-$(document).ready(function() {
- 
-//Код первой вкладки (стандартное использование)
-   $("#datepicker_dBegin").datepicker({dateFormat:"dd-mm-yy"});;
-    $("#datepicker_dEnd").datepicker({dateFormat:"dd-mm-yy"});;
-});
-</script>
         <section class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">         
             <jsp:doBody/>        
         </section>
