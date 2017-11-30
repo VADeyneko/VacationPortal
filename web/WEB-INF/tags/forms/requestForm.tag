@@ -29,6 +29,9 @@
 <c:set var="vacationType_header">
     <fmt:message key="label.vacationType_header"/>
 </c:set>
+<c:set var="calendar_header">
+    <fmt:message key="label.calendar"/>
+</c:set>
 <c:set var="requestOwnerComment_header">
     <fmt:message key="label.ownerComment_header"/>
 </c:set>
@@ -87,24 +90,20 @@
         <label for="Select3" >${requestState_header} :</label>         
         <select  id="Select3" class="form-control"  readonly="true"  ${dsbl_all}  name="requestState"  >
          <c:forEach var="state"  items="${requestStateList}">                      
-            <option  ${action != "requestInsert"  ? 'disabled="disabled"' : ''}  value="${state.id}" ${state.id == objToEdit.requestState.getId() ? 'selected="selected"' : ''}>${state.name}</option>
+            <option  ${action.equals("requestInsert") || state.id == objToEdit.requestState.getId()  ? '' : 'disabled="disabled"'}  value="${state.id}" ${state.id == objToEdit.requestState.getId() ? 'selected="selected"' : ''}>${state.name}</option>
          </c:forEach>
         </select>             
     </div>   
          
       </div>         
        
-      <%--КАЛЕНДАРИК --%>         
+      <%--КАЛЕНДАРИК --%>    
+      <label for="date-range0-container" > ${calendar_header}</label>      
       <div class="col-xs-6  "  id="date-range0-container" > </div>	
       
    </div>    
         
-               
-   
-               
-   
-  
-     
+      
      <div class="form-group ">    
     <label for="managerComment">${requestManagerComment_header}</label>      
      <textarea  rows="1"
@@ -141,7 +140,7 @@
         <label for="Select1" >${requestOwner_header} :</label>         
         <select  id="Select1" class="form-control"  readonly="true"    name="requestOwner"    >
          <c:forEach var="requestOwner"  items="${userList}">                      
-             <option   ${action != "requestInsert"  ? 'disabled="disabled"' : ''} value="${requestOwner.id}" ${requestOwner.id == reqOwner.getId() ? 'selected="selected"' : ''}>${requestOwner.getFullName()}</option>
+             <option   ${action.equals( "requestInsert") || requestOwner.id == reqOwner.getId() ? '': 'disabled="disabled"' } value="${requestOwner.id}" ${requestOwner.id == reqOwner.getId() ? 'selected="selected"' : ''}>${requestOwner.getFullName()}</option>
          </c:forEach>
         </select>             
     </div>      
