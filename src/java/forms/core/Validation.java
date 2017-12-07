@@ -32,7 +32,8 @@ public final class Validation {
     }
     
     public static void assertNotEmpty(String text) {
-        if (text.trim().isEmpty()) {
+       
+        if (  text.trim().isEmpty() ) {
             throw new ValidationException(ERRORS.getString("error.validation.required"));
         }
     }

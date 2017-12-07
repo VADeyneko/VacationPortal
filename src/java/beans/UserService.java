@@ -1,9 +1,12 @@
 package beans;
 
+//import dao.MenuItemDao;
+import dao.MenuItemDao;
 import dao.UserDao;
 import exceptions.PrimaryKeyViolationException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -27,6 +30,11 @@ public class UserService implements Serializable {
 
     protected @EJB
     UserDao dao;
+    
+    protected @EJB
+    MenuItemDao menuItemDao;
+    
+    private Collection<MenuItem> allowedMenuItems;
 
     public void register(User user) throws PrimaryKeyViolationException {
         if (dao.exists(user.getCredentials())) {
@@ -43,11 +51,9 @@ public class UserService implements Serializable {
             
             session.setAttribute("sessionUser", user); // устанавливаем юзера на всю сессию
 
-            List<MenuItem> MenuItemList = new ArrayList<>();
-            MenuItemList.addAll(user.getUserGroup().getMenuItems());
-
-            session.setAttribute("sessionMenuItems", MenuItemList);
-
+            allowedMenuItems = new ArrayList<>(); 
+            allowedMenuItems.addAll(user.getUserGroup().getMenuItems());
+            session.setAttribute("sessionMenuItems", allowedMenuItems);
         } else {
             throw new AccountNotFoundException();
         }
@@ -82,4 +88,27 @@ public class UserService implements Serializable {
     public void delete(User user) {
         dao.delete(user);
     }
+    
+    /*
+    * checks if user has access to menu item. used in filter
+    */
+    public boolean hasAccessToMenuItem(String menuItemPath){
+        if (!isAuth)  
+            return false;     
+        
+           Collection<MenuItem> dissallowed = new ArrayList<>();
+           for (MenuItem i : menuItemDao.all() ){
+                 if (!allowedMenuItems.contains(i))
+                           dissallowed.add(i);
+          }
+          
+           for (MenuItem i : dissallowed  ){
+                if(menuItemPath.trim().equals(("/" +  i.getMenuPath().trim()))  )
+                                    return false;
+           }
+           
+            /*if the path is not of a menu, then return true*/             
+           return true;
+    }
+      
 }

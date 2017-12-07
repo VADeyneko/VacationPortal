@@ -24,25 +24,16 @@
   
     <h3>${title}</h3>
    
- 
-    <div class="col-sm-6 col-lg-6  "  >
-         <p> </p>
-    <table class="table   table-striped table-condensed    " >      
-        <c:forEach var="details" items="${detailsCollection}"> 
-          <tr>
-              <td> <b> ${details.getKey()} </b> </td>
-              <td>  ${details.getValue()} </td>                      
-           </tr>    
-         </c:forEach>              
-      </table>
-    </div>   
+    <forms:detail/>
+     <c:if test="${formType.equals('request')  }">
+              
+        <forms:requestHistory/>
+       <forms:requestIntersections/>
+        <common:detailRequestButtons/>
+    </c:if>
     
-   <div class=" btn-group  col-lg-12 col-lg-12 col-sm-offset-0">
-       <a href="${formType}Delete?id=${objToEdit.id}" class="btn btn-link " role="button"> <fmt:message key="label.delete"/></a> 
-       <a href="${formType}Edit?id=${objToEdit.id}" class="btn btn-link" role="button"> <fmt:message key="label.edit"/></a>
-     <a onclick="javascript:history.back(); return false;" class="btn btn-link" role="button"> <fmt:message key="label.back"/></a>
-    
-     </div> 
-
+     <c:if test="${formType.equals('user')}">
+         <common:detailButtons/>
+    </c:if>
            
 </common:layout>

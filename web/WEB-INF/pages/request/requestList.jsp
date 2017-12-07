@@ -20,6 +20,11 @@
     <fmt:message key="label.requestList"/>
 </c:set>
 
+
+<c:set var="titleManager">
+    <fmt:message key="label.requestListManager"/>
+</c:set>
+
 <c:set var="requestOwner_header">
     <fmt:message key="label.requestOwner_header"/>
 </c:set>
@@ -44,7 +49,7 @@
 
     <jsp:body>
         <common:topmenu/>
-    <h3>${title}</h3>
+    <h3>${action.equals ('requestList') ? title : titleManager }</h3>
     
 
     <div><forms:insert/></div>
@@ -56,7 +61,7 @@
                 <th>${requestDateEnd_header}</th>
                   <th>${requestState_header}</th>
                 <th>${requestManager_header}</th>               
-        
+               <th>${requestOwner_header}</th>  
             </tr>
           </thead>
            <tbody>
@@ -68,7 +73,7 @@
                     <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.getFormatedDateEnd()} </a>  </td>
                     <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.requestState.getName()} </a>  </td>                    
                      <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.manager.getFullName()} </a>  </td>     
-                   
+                     <td> <a href="${formType}Details?id=${rqst.id}"> ${rqst.owner.getFullName()} </a>  </td> 
                 </tr>
                   </c:forEach>
        </tbody>           

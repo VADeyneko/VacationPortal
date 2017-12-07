@@ -37,12 +37,12 @@ public class RequestForm implements Convertable<Request> {
 
     static {
         ERRORS = ResourceBundle.getBundle("resources.errors");
-         LABELS = ResourceBundle.getBundle("resources.labels");
+        LABELS = ResourceBundle.getBundle("resources.labels");
     }
 
     @Inject
     protected HttpServletRequest request;
-    
+
     @Inject
     protected RequestService service;
 
@@ -77,14 +77,17 @@ public class RequestForm implements Convertable<Request> {
         requestState = request.getParameter("requestState");
         ownerComment = request.getParameter("ownerComment");
         managerComment = request.getParameter("managerComment");
-             
-      if (!request.getParameter("id").equals("") )
-                id = Long.parseLong(request.getParameter("id"));      
+
+        if (!request.getParameter("id").equals("")) {
+            id = Long.parseLong(request.getParameter("id"));
+        }
+
     }
 
-     public Long getId() {
+    public Long getId() {
         return id;
     }
+
     public String getManager() {
         return manager;
     }
@@ -110,8 +113,8 @@ public class RequestForm implements Convertable<Request> {
     }
 
     private void validate() throws ValidationException {
-        
-        assertNotEmpty(manager);        
+
+        assertNotEmpty(manager);
         assertNotEmpty(dateBegin);
         assertNotEmpty(dateEnd);
         assertNotEmpty(requestState);
@@ -121,28 +124,46 @@ public class RequestForm implements Convertable<Request> {
         assertDate(dateBegin);
         assertDate(dateEnd);
     }
-    
-    public void validateAndUpdate(Request request) throws ValidationException{
+
+    public  Request validateAndUpdate(Request request) throws ValidationException {
         Request reqConv = convertTo(Request.class);
+        if(!request.getRequestState().getId().equals( reqConv.getRequestState().getId() ) ) {
+            request.addCloneToHistory(request); //запоминаем клон самого себя до изменений
+        }            
         request.updateWithRequest(reqConv);
-        reqConv= null;// обнуляем ссылку для GC
-                
-        service.update(request);        
+        reqConv = null;// обнуляем ссылку для GC
+        return request ;
+    }
+    
+   public Request forwardToState(Request request) throws ValidationException {
+     assertNotEmpty(requestState);  
+     RequestState newState = (RequestState) parseParameter(requestStateDao, "requestState");
+     
+     if(request.getRequestState().getId()== 2 && newState.getId() == 4 )
+         assertNotEmpty(managerComment);  
+     
+     if(!request.getRequestState().getId().equals( newState.getId()) ) {
+            request.addCloneToHistory(request); //запоминаем клон самого себя до изменений
+        }
+     
+      request.setManagerComment(managerComment);
+      request.setRequestState(newState);   //устанавливаем НОВОЕ состояние
+      
+      return request;
     }
 
     @Override
-    public Request convertTo(Class<Request> cls) throws ValidationException {            
-        
+    public Request convertTo(Class<Request> cls) throws ValidationException {
+
         validate();
         User managerConvert = (User) parseParameter(dao, "requestManager");
-        User ownerConvert = (User) parseParameter(dao,   "requestOwner");
-           java.sql.Date dateBeginConvert = getDate(dateBegin);
+        User ownerConvert = (User) parseParameter(dao, "requestOwner");
+        java.sql.Date dateBeginConvert = getDate(dateBegin);
         java.sql.Date dateEndConvert = getDate(dateEnd);
-        VacationType vacationTypeConvert = (VacationType) parseParameter(vacationTypeDao,  "vacationType");
-        RequestState requestStateConvert = (RequestState) parseParameter(requestStateDao,  "requestState");
+        VacationType vacationTypeConvert = (VacationType) parseParameter(vacationTypeDao, "vacationType");
+        RequestState requestStateConvert = (RequestState) parseParameter(requestStateDao, "requestState");
+                
 
-                  
-  
         return new Request(ownerConvert,
                 managerConvert,
                 dateBeginConvert,
@@ -152,56 +173,47 @@ public class RequestForm implements Convertable<Request> {
                 ownerComment,
                 managerComment);
     }
-    
-    
-   public LinkedHashMap<String, String> getDetailSummary(Request obj){
+
+    public LinkedHashMap<String, String> getDetailSummary(Request obj) {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put(LABELS.getString("label.requestOwner_header"), obj.getOwner().getFullName());
         map.put(LABELS.getString("label.requestManager_header"), obj.getManager().getFullName());
         map.put(LABELS.getString("label.requestDateBegin_header"), obj.getDateBegin().toString());
-        map.put(LABELS.getString("label.requestDateEnd_header"), obj.getDateEnd().toString());        
+        map.put(LABELS.getString("label.requestDateEnd_header"), obj.getDateEnd().toString());
         map.put(LABELS.getString("label.requestState_header"), obj.getRequestState().getName());
         map.put(LABELS.getString("label.vacationType_header"), obj.getVacationType().getName());
-        map.put(LABELS.getString("label.ownerComment_header"), obj.getOwnerComment());  
-        map.put(LABELS.getString("label.managerComment_header"), obj.getManagerComment());          
-           
+        map.put(LABELS.getString("label.ownerComment_header"), obj.getOwnerComment());
+        map.put(LABELS.getString("label.managerComment_header"), obj.getManagerComment());
+
         return map;
     }
 
-    private Object parseParameter(AbstractDao dao,   String paramName) {
+    private Object parseParameter(AbstractDao dao, String paramName) {
         String param = request.getParameter(paramName);
-        if (param != null){
-        Long id = Long.parseLong(param);
-        return dao.find(id);
-        }
-        else{
+        if (param != null) {
+            Long id = Long.parseLong(param);
+            return dao.find(id);
+        } else {
             return null;
         }
     }
 
     private java.sql.Date getDate(String textDate) throws ValidationException {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 
-            formatter.applyPattern("dd.MM.yyyy");
-            
-            Logger log = Logger.getLogger("forms.RequestForm");      
-            
-            log.log(Level.INFO, "aa   " +  textDate);
-                  
-            log.log(Level.INFO, "bb   " +  formatter.toPattern());
+        formatter.applyPattern("dd.MM.yyyy");
+
         try {
 
-            
-             java.util.Date utilDate = formatter.parse(textDate);
+            java.util.Date utilDate = formatter.parse(textDate);
 
-             
             java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
-              log.log(Level.INFO, "bccb   " +  sqlDate.toString());
+
             return sqlDate;
         } catch (IllegalArgumentException | ParseException e) {
-             throw new ValidationException(ERRORS.getString("error.validation.wrong-date" ));
+            throw new ValidationException(ERRORS.getString("error.validation.wrong-date"));
         }
-       
+
     }
 
 }

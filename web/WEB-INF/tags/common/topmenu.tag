@@ -36,7 +36,7 @@
           </ul>
           <ul class="nav nav-sidebar">
             <c:forEach var="menuItem" items="<%=session.getAttribute("sessionMenuItems")%>">
-                <li><a href=${menuItem.servletPath}>${menuItem.labelName}</a></li>
+                <li><a href=${menuItem.menuPath}>${menuItem.labelName}</a></li>
             </c:forEach>
            
           </ul>

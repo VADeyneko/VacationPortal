@@ -17,7 +17,7 @@ import javax.validation.ValidationException;
 import model.User;
 import model.UserGroup;
 
-@WebServlet(urlPatterns = {"/userManagement", "/userEdit", "/userDelete", "/userInsert", "/userDetails"})
+@WebServlet(name = "UserManagementServlet", urlPatterns = {"/userManagement", "/userEdit", "/userDelete", "/userInsert", "/userDetails"})
 public class UserManagementServlet extends AbstractServlet {
 
     @Inject

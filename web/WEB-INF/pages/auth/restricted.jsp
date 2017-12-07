@@ -1,9 +1,11 @@
 <%-- 
-    Document   : registration
-    Created on : 02.11.2017, 15:29:36
-    Author     : admin
+    Document   : restricted
+    Created on : 07.12.2017, 17:56:01
+    Author     : Victor Deyneko <VADeyneko@gmail.com>
 --%>
 
+ 
+ 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="common" tagdir="/WEB-INF/tags/common/" %>
 <%@taglib prefix="forms" tagdir="/WEB-INF/tags/forms/" %>
@@ -13,13 +15,15 @@
 <fmt:setBundle basename="resources.labels"/>
 
 <c:set var="title">
-    <fmt:message key="label.registration"/>
+    <fmt:message key="label.access-restricted"/>
 </c:set>
 
 <common:layout title="${title}">
-    
-    <h3>${title}</h3>
-
-    <forms:registration/>
-    
+    <jsp:body>
+      
+  <div class="alert alert-danger alert-dismissable">
+      <strong class="text-center"> <h2> ${title} </h2></strong>
+</div>
+ 
+    </jsp:body>
 </common:layout>

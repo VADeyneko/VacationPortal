@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 import model.Credentials;
 
-@WebServlet( urlPatterns = {"/login", "/logout"})
+@WebServlet( urlPatterns = {"/login", "/logout", "/restricted"})
 public class LoginServlet extends AbstractServlet {
     
     @Inject HttpServletRequest request;
@@ -29,11 +29,15 @@ public class LoginServlet extends AbstractServlet {
        
         if(request.getServletPath().equals("/logout")) {         
             service.signOut();
-        }
-            
-          
+        }         
+        
+               
+        if(request.getServletPath().equals("/restricted")) {         
+           forward("auth/restricted");
+        }      
+        
         forward("auth/login");
-    }
+        }
 
     @Override
     protected void doPost() throws ServletException, IOException {
@@ -42,7 +46,7 @@ public class LoginServlet extends AbstractServlet {
             Credentials credentials = form.convertTo(Credentials.class);
             service.singIn(credentials);
          
-             redirect("VacationPortal/userManagement");
+             redirect("VacationPortal/requestList");
         } catch (ValidationException e) {
             request.setAttribute("error", e.getMessage());
         } catch (AccountNotFoundException e) {

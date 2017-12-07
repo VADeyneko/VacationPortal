@@ -49,6 +49,8 @@ $(document).ready(function() {
 		'default-default': 'This is costom language'
 	};
 	
+  
+        
 	$('#date-range0').dateRangePicker(
 	{inline:true,
         container: '#date-range0-container',
@@ -71,6 +73,15 @@ $(document).ready(function() {
 			$('#datepicker_dBegin').val(s1);
 			$('#datepicker_dEnd').val(s2);
 		}
+                     
+	,beforeShowDay: function(t)
+	{
+                
+		var valid =  !( $('#datepicker_dBegin').prop('disabled') );  //disable saturday and sunday
+		var _class = '';
+		var _tooltip = valid ? '' :   'disabled';
+		return [valid,_class,_tooltip];
+	}
 	}).bind('datepicker-first-date-selected', function(event, obj)
 	{
 		/* This event will be triggered when first date is selected */
