@@ -46,7 +46,7 @@ $(document).ready(function() {
 		'default-more' : 'Please select a date range longer than %d days',
 		'default-less' : 'Please select a date range less than %d days',
 		'default-range' : 'Please select a date range between %d and %d days',
-		'default-default': 'This is costom language'
+		'default-default': 'Выберите период'
 	};
 	
   
@@ -77,7 +77,7 @@ $(document).ready(function() {
 	,beforeShowDay: function(t)
 	{
                 
-		var valid =  !( $('#datepicker_dBegin').prop('disabled') );  //disable saturday and sunday
+		var valid =  !( $('#datepicker_dBegin').prop('disabled') );  //disable everything
 		var _class = '';
 		var _tooltip = valid ? '' :   'disabled';
 		return [valid,_class,_tooltip];

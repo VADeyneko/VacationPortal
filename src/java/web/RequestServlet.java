@@ -13,16 +13,11 @@ import dao.RequestStateDao;
 import dao.VacationTypeDao;
 import exceptions.PrimaryKeyViolationException;
 import forms.RequestForm;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import forms.core.FormParamProps;
 import javax.ejb.EJB;
 import javax.validation.ValidationException;
 import model.Request;
-import model.RequestState;
 import model.User;
-import model.VacationType;
 
 @WebServlet(name = "RequestServlet", urlPatterns = {"/requestList", "/requestEdit", "/requestDelete", "/requestInsert", "/requestDetails", "/requestListManager", "/requestForward"})
 public class RequestServlet extends AbstractServlet {
@@ -47,7 +42,7 @@ public class RequestServlet extends AbstractServlet {
 
     protected @EJB
     RequestStateDao requestStateDao;
-    
+
     private Request objToEdit;
 
     private User requestOwner;
@@ -60,16 +55,17 @@ public class RequestServlet extends AbstractServlet {
 
     private boolean byManager;
 
+    FormParamProps paramProps;
+
     @Override
     protected void doGet() throws ServletException, IOException {
         action = request.getServletPath().substring(1);
         request.setAttribute("formType", formType);
-        request.setAttribute("action", action);  
+        request.setAttribute("action", action);
+        paramProps = form.initParamProps();
 
- 
-            requestOwner = userService.getAuthUser();
-            request.setAttribute("reqOwner", requestOwner);
- 
+        requestOwner = userService.getAuthUser();
+        request.setAttribute("reqOwner", requestOwner);
 
         if (!action.contains(objListPath)) {
 
@@ -78,7 +74,7 @@ public class RequestServlet extends AbstractServlet {
             try {
                 if (request.getParameter("id") != null && form.getId() != null) { //для редактирования и удаления
                     objToEdit = service.findById(form.getId());
-                    request.setAttribute("objToEdit", objToEdit);                    
+                    request.setAttribute("objToEdit", objToEdit);
                     request.setAttribute("detailsCollection", form.getDetailSummary(objToEdit));
                     request.setAttribute("possibleStates", objToEdit.getRequestState().getPossibleStates(byManager));
                     request.setAttribute("intersectionList", dao.findIntersections(objToEdit));
@@ -95,6 +91,11 @@ public class RequestServlet extends AbstractServlet {
 
             disableEdit();    //Метод использует поле objToEdit. Есть проверка на Null
             fillDropDownControls(); // Заполняем строго ПОСЛЕ, т.к. метод использует Attribute "possibleStates".  + использует поле objToEdit
+
+            paramProps.setDisabled("requestState", false);
+            paramProps.setReadonly("requestState", true);
+            paramProps.setDisabled("date-range0-container", true);
+            request.setAttribute("formParamProps", paramProps);
 
             forward("actions/" + action.substring(7));
 
@@ -114,23 +115,22 @@ public class RequestServlet extends AbstractServlet {
     protected void doPost() throws ServletException, IOException {
         action = request.getServletPath().substring(1);
 
-        if   (action.equals(formType + "Forward"))  {
+        if (action.equals(formType + "Forward")) {
             Request objToSave = service.findById(form.getId());
             try {
                 objToSave = form.forwardToState(objToSave);
-                service.checkIntersectionByOwner(objToSave , action);
+                service.checkIntersectionByOwner(objToSave, action);
                 service.update(objToSave);
             } catch (ValidationException d) {
                 request.setAttribute("error", d.getLocalizedMessage());
                 doGet();
             }
         }
-        
-        
-        if ((action.equals(formType + "Edit"))  ) {
+
+        if ((action.equals(formType + "Edit"))) {
             Request objToSave = service.findById(form.getId());
             try {
-                 service.checkIntersectionByOwner(objToSave, action);
+                service.checkIntersectionByOwner(objToSave, action);
                 objToSave = form.validateAndUpdate(objToSave);
                 service.update(objToSave);
             } catch (ValidationException d) {
@@ -143,13 +143,13 @@ public class RequestServlet extends AbstractServlet {
             try {
                 Request req = form.convertTo(Request.class);
                 service.checkIntersectionByOwner(req, action);
-                service.register(req);                
+                service.register(req);
             } catch (ValidationException d) {
                 request.setAttribute("error", d.getLocalizedMessage());
-                 doGet();
+                doGet();
             } catch (PrimaryKeyViolationException ex) {
                 request.setAttribute("error", "already exists");
-                 doGet();
+                doGet();
             }
         }
 
@@ -164,98 +164,84 @@ public class RequestServlet extends AbstractServlet {
         }
 
         init();
-     
-        if(byManager)
-          redirect("VacationPortal/" + objListPath + "Manager");
-        else
+
+        if (byManager) {
+            redirect("VacationPortal/" + objListPath + "Manager");
+        } else {
             redirect("VacationPortal/" + objListPath);
+        }
     }
 
     //Заполнение выпадающих списков формы
     private void fillDropDownControls() {
-         
-        List<User> ownerList = new ArrayList<>();
-        ownerList.add(requestOwner); //Без вариантов только один создатель
-        request.setAttribute("ownerList", ownerList);
 
-        List<User> managerList ;
-        managerList = userService.findAll();
-        request.setAttribute("managerList", managerList);
-
-        LinkedList<RequestState> requestStateList = new LinkedList<>();
+        form.fillOwnerDropdown(requestOwner);
+        form.fillManagerDropdown();
 
         //Если вставка, то будет доступен ТОЛЬКО ОДИН вариант. Иначе - два
-        if (action.equals(formType + "Insert") ||  objToEdit == null ) {
-            requestStateList.addAll(requestStateDao.getInitialStateList());
-            request.setAttribute("requestStateList", requestStateList);
-        } else {           
-            requestStateList.add(objToEdit.getRequestState());
-            requestStateList.addAll(objToEdit.getRequestState().getPossibleStates(byManager));
-            request.setAttribute("requestStateList", requestStateList);
-        }
-
-        // вспомогательный блок для определения в ReqeustForm.tag того,
-        //какой элемент requestStateList выбран и Endabled
-        if (request.getParameter("toState") != null) {
-            request.setAttribute("selectedState_Id", request.getParameter("toState"));
+        if (objToEdit == null || action.equals(formType + "Insert")) {
+            form.fillRequestStateDropdown(null, byManager);
         } else {
-             try {
-                   request.setAttribute("selectedState_Id", requestStateList.getFirst().getId());
-                 } catch (NoSuchElementException ignore) {}
-           
+            form.fillRequestStateDropdown(objToEdit, byManager);
         }
 
-        List<VacationType> vacationTypeList = vacationTypeDao.all();
-        request.setAttribute("vacationTypeList", vacationTypeList);
+        form.fillVacationTypeDropdown();
     }
 
     /*вспомогательный метод*/
-    private void disableEdit(){         
-         String result  ="";
-          
-        request.setAttribute("isOwnerCommentReadonly", isOwnerCommentReadonly());  
-        request.setAttribute("isManagerCommentReadonly", isManagerCommentReadonly());  
-      
-       
+    private void disableEdit() {
         
-         if(objToEdit != null)   {
-                if( ( action.equals(formType + "Delete")) || objToEdit.isIsHistoryEntity()  ) {
-                    result = DISABLED ;
-                }               
+        paramProps.setReadonly("managerComment", isManagerCommentReadonly());
+        paramProps.setReadonly("ownerComment", isOwnerCommentReadonly());
 
-                if(objToEdit.getRequestState().getId() > 1L){
-                      result = DISABLED;
-                }
-                                 
-         }
-         
-         if(action.contains("Insert"))
-             result = "";
-                  
-          request.setAttribute("dsbl_all", result); //управление доступностью ВСЕХ полей для удаления
-      
+        if (objToEdit != null) {
+            if ((action.equals(formType + "Delete")) || objToEdit.isIsHistoryEntity()) {
+
+                paramProps.setAllDisabled(true);
+            }
+
+            if (objToEdit.getRequestState().getId() > 1L) {
+
+                paramProps.setAllDisabled(true);
+            }
+        }
+
+
+        paramProps.setDisabled("managerComment", false);
+        paramProps.setDisabled("ownerComment", false);
+
+        if (action.contains("Insert")) {
+            paramProps.setAllDisabled(false);
+        }
+
     }
-    
-    
-   private  String isOwnerCommentReadonly (){
-       if (objToEdit == null) return "";
-           
-       if (objToEdit.isIsHistoryEntity() || byManager  )
-                   return  READONLY;
-       
-       return  (objToEdit.getRequestState().getId() == 1)  ? "" : READONLY ;
-   }
-       
-   private  String isManagerCommentReadonly (){
-        if (objToEdit == null) return  READONLY;
-           
-        if( action.contains("Insert"))
-            return  READONLY ;
-        
-        if (objToEdit.isIsHistoryEntity() || !byManager )
-                return  READONLY;
-        
-       return  (objToEdit.getRequestState().getId() == 1) ?  READONLY : "";
-   }
-     
+
+    private boolean isOwnerCommentReadonly() {
+        if (objToEdit == null) {
+            return false;
+        }
+
+        if (objToEdit.isIsHistoryEntity() || byManager) {
+            return true;
+        }
+
+        return (objToEdit.getRequestState().getId() != 1);
+    }
+
+    private boolean isManagerCommentReadonly() {
+        if (objToEdit == null) {
+            return false;
+        }
+
+        if (action.contains("Insert")) {
+            return true;
+        }
+
+        if (objToEdit.isIsHistoryEntity() || !byManager) {
+            return true;
+        }
+
+        return (objToEdit.getRequestState().getId() == 1);
+    }
+
 }

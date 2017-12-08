@@ -7,8 +7,6 @@ package filters;
 
 import beans.UserService;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -19,14 +17,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.MenuItem;
 import model.User;
 
 /**
  *
  * @author admin
  */
-@WebFilter(filterName = "authFilter", servletNames = {"UserManagementServlet",  "RequestServlet"})
+@WebFilter(filterName = "authFilter", servletNames = {"UserManagementServlet",  "RequestServlet",  "ReportServlet"})
 public class authFilter implements Filter {
 
     @Inject

@@ -6,6 +6,7 @@ import dao.RequestStateDao;
 import dao.UserDao;
 import dao.VacationTypeDao;
 import forms.core.Convertable;
+import forms.core.FormParamProps;
 import java.util.ResourceBundle;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -17,9 +18,11 @@ import model.User;
 import static forms.core.Validation.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import model.RequestState;
@@ -47,12 +50,12 @@ public class RequestForm implements Convertable<Request> {
     protected RequestService service;
 
     protected @EJB
-    UserDao dao;
+    UserDao userDao;
     protected @EJB
     VacationTypeDao vacationTypeDao;
     protected @EJB
     RequestStateDao requestStateDao;
-
+  
     protected String manager;
     protected String owner;
     protected String dateBegin;
@@ -62,6 +65,8 @@ public class RequestForm implements Convertable<Request> {
     protected String ownerComment;
     protected String managerComment;
     protected Long id;
+    
+    private FormParamProps paramProps;
 
     public HttpServletRequest getRequest() {
         return request;
@@ -78,10 +83,9 @@ public class RequestForm implements Convertable<Request> {
         ownerComment = request.getParameter("ownerComment");
         managerComment = request.getParameter("managerComment");
 
-        if (!request.getParameter("id").equals("")) {
+        if ((request.getParameter("id")!=null ) && !request.getParameter("id").equals("")  ){
             id = Long.parseLong(request.getParameter("id"));
-        }
-
+        }    
     }
 
     public Long getId() {
@@ -156,8 +160,8 @@ public class RequestForm implements Convertable<Request> {
     public Request convertTo(Class<Request> cls) throws ValidationException {
 
         validate();
-        User managerConvert = (User) parseParameter(dao, "requestManager");
-        User ownerConvert = (User) parseParameter(dao, "requestOwner");
+        User managerConvert = (User) parseParameter(userDao, "requestManager");
+        User ownerConvert = (User) parseParameter(userDao, "requestOwner");
         java.sql.Date dateBeginConvert = getDate(dateBegin);
         java.sql.Date dateEndConvert = getDate(dateEnd);
         VacationType vacationTypeConvert = (VacationType) parseParameter(vacationTypeDao, "vacationType");
@@ -215,5 +219,78 @@ public class RequestForm implements Convertable<Request> {
         }
 
     }
+    
+  
+    public  void fillVacationTypeDropdown(){
+       List<VacationType> vacationTypeList = vacationTypeDao.all();
+       request.setAttribute("vacationTypeList", vacationTypeList);        
+    }
+    
+   public  void fillManagerDropdown(){
+        List<User> managerList   = userDao.all();
+        request.setAttribute("managerList", managerList);
+    }
 
+      public  void fillOwnerDropdown(User owner){
+        List<User> ownerList = new ArrayList<>();
+        ownerList.add(owner); //Без вариантов только один создатель
+        request.setAttribute("ownerList", ownerList);
+    }
+      
+    public  void fillOwnerDropdown(){
+        List<User> ownerList = userDao.all();     
+        request.setAttribute("ownerList", ownerList);
+    }  
+      
+     public  void fillRequestStateDropdown(Request objToEdit, boolean byManager){
+         LinkedList<RequestState> requestStateList = new LinkedList<>();
+       
+         if(objToEdit != null){
+            requestStateList.add(objToEdit.getRequestState());
+            requestStateList.addAll(objToEdit.getRequestState().getPossibleStates(byManager));
+            request.setAttribute("requestStateList", requestStateList);
+        } else {
+            requestStateList.addAll(requestStateDao.getInitialStateList());
+            request.setAttribute("requestStateList", requestStateList);
+         }
+         
+       // вспомогательный блок для определения в ReqeustForm.tag того,
+        //какой элемент requestStateList выбран и Endabled
+        if (request.getParameter("toState") != null) {
+            request.setAttribute("selectedState_Id", request.getParameter("toState"));
+        } else {
+             try {
+                   request.setAttribute("selectedState_Id", requestStateList.getFirst().getId());
+                 } catch (NoSuchElementException ignore) {}
+           
+        }
+    }     
+     
+     public  void fillRequestStateDropdown(){
+         List<RequestState> requestStateList = new LinkedList<>();
+         requestStateList.addAll(requestStateDao.all());
+         request.setAttribute("requestStateList", requestStateList);   
+         request.setAttribute("selectedState_Id", requestStateList.get(0).getId());
+    }      
+     
+
+    
+    public FormParamProps initParamProps(){
+        if (paramProps == null){
+        paramProps = new FormParamProps();
+        paramProps.add("requestManager");
+        paramProps.add("requestOwner");
+        paramProps.add("dateBegin");
+        paramProps.add("dateEnd");
+        paramProps.add("vacationType");
+        paramProps.add("requestState");
+        paramProps.add("ownerComment");
+        paramProps.add("managerComment");
+         paramProps.add("date-range0-container");
+        
+        }
+        
+        return paramProps;
+    }
+    
 }

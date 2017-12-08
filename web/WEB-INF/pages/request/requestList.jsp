@@ -1,10 +1,9 @@
 <%-- 
     Document   : requestList
     Created on : 15.11.2017, 19:02:15
-    Author     : admin
+    Author     : Victor Deyneko <VADeyneko@gmail.com>
 --%>
-
-
+ 
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="common" tagdir="/WEB-INF/tags/common/" %>
@@ -51,8 +50,9 @@
         <common:topmenu/>
     <h3>${action.equals ('requestList') ? title : titleManager }</h3>
     
-
-    <div><forms:insert/></div>
+    <c:if test="${action.equals ('requestList') }">
+     <div><forms:insert/></div>
+    </c:if>
     <table class="table table-hover ">
          <thead>
             <tr>   
