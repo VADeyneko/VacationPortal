@@ -95,27 +95,73 @@ public class RequestForm implements Convertable<Request> {
     public String getManager() {
         return manager;
     }
+    
+    
+    public Long getManagerId() {
+        try{
+        return Long.parseLong(manager);
+        }
+        catch (NumberFormatException ee){
+             throw new ValidationException(ERRORS.getString("error.validation.wrong-number"));
+        }
+    }
 
     public String getOwner() {
         return owner;
+    }
+    
+    public Long getOwnerId() {
+        try{
+        return Long.parseLong(owner);
+        }
+        catch (NumberFormatException ee){
+             throw new ValidationException(ERRORS.getString("error.validation.wrong-number"));
+        }
     }
 
     public String getDateBegin() {
         return dateBegin;
     }
+    
+    public  java.sql.Date getValidatedDateBegin(){
+         return  getDate(dateBegin);
+    }
 
     public String getDateEnd() {
         return dateEnd;
     }
+    
+    public  java.sql.Date getValidatedDateEnd(){
+         return  getDate(dateEnd);
+    }
 
     public String getRequestState() {
         return requestState;
+    }
+    
+     public Long getRequestStateId() {
+        try{
+        return Long.parseLong(requestState);
+        }
+        catch (NumberFormatException ee){
+             throw new ValidationException(ERRORS.getString("error.validation.wrong-number"));
+        }
     }
 
     public String getVacationType() {
         return vacationType;
     }
 
+    public Long getVacationTypeId() {
+        try{
+        return Long.parseLong(vacationType);
+        }
+        catch (NumberFormatException ee){
+             throw new ValidationException(ERRORS.getString("error.validation.wrong-number"));
+        }
+    }
+    
+    
     private void validate() throws ValidationException {
 
         assertNotEmpty(manager);

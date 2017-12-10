@@ -1,9 +1,13 @@
  
 package web;
 
+import dao.RequestDao;
 import forms.RequestForm;
 import forms.core.FormParamProps;
 import java.io.IOException;
+import java.sql.Date;
+import java.util.List;
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,6 +32,10 @@ public class ReportServlet extends AbstractServlet {
    
    private FormParamProps paramProps;
    
+    protected @EJB
+    RequestDao dao;
+
+   
     @Override
     protected void doGet() throws ServletException, IOException {
           action = request.getServletPath().substring(1);
@@ -51,4 +59,25 @@ public class ReportServlet extends AbstractServlet {
           forward("report/requestReport");
     }
     
+    
+      @Override
+    protected void doPost() throws ServletException, IOException {
+        action = request.getServletPath().substring(1);
+
+        if (action.contains("requestReport")) {
+            Long vacationTypeId = form.getVacationTypeId();
+            Long managerId = form.getManagerId();
+            Long ownerId = form.getOwnerId();
+            Long requestStateId = form.getRequestStateId();
+            Date validatedDateBegin = form.getValidatedDateBegin();
+            Date validatedDateEnd = form.getValidatedDateEnd();
+            
+            
+            List<Request> reportList;
+            reportList = dao.getReport(vacationTypeId, managerId, ownerId, requestStateId, validatedDateBegin, validatedDateEnd);
+            request.setAttribute("isParameterDivHidden", "hidden");
+            request.setAttribute("reportList", reportList);
+        }
+        doGet();
+    }    
 }

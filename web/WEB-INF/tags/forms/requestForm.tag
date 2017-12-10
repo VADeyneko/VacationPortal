@@ -49,7 +49,7 @@
   <common:topmenu/>
  
 			
-  <form action="<%= request.getContextPath()%>/${action}?id=${objToEdit.id}"   method="post"  class="form-horizontal  ">      			      
+  <form action="<%= request.getContextPath()%>/${action}<c:if test="${notDefinedAllowed == false}">?id=${objToEdit.id}</c:if>"   method="post"  class="form-horizontal  ">      			      
     <div class="form-group ">        
       <div class="  col-xs-2">          
             <label  class=" control-label small" for="datepicker_dBegin">${requestDateBegin_header}</label>
@@ -103,7 +103,7 @@
         
      <div class="form-group col-xs-6">    
      
-           <div ${formParamProps.getProps("ownerComment")}   >   
+           <div ${formParamProps.getProps("ownerComment")}>   <%--visibility --%>
      <label for="ownerComment"  class=" control-label small ">${requestOwnerComment_header}</label>
      <textarea  class="form-control  input-sm "  rows="2"  
            id="ownerComment1"   
