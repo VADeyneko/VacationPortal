@@ -4,10 +4,13 @@ package beans;
 import dao.MenuItemDao;
 import dao.UserDao;
 import exceptions.PrimaryKeyViolationException;
+import helpers.PasswordEncrypter;
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -34,18 +37,54 @@ public class UserService implements Serializable {
     protected @EJB
     MenuItemDao menuItemDao;
     
+    @Inject
+    private PasswordEncrypter encrypter;
+    
     private Collection<MenuItem> allowedMenuItems;
+    
+    private static final ResourceBundle ERRORS;
 
-    public void register(User user) throws PrimaryKeyViolationException {
+    static {
+        ERRORS = ResourceBundle.getBundle("resources.errors");         
+    }
+
+    public void register(User user) throws PrimaryKeyViolationException, NoSuchAlgorithmException {
+       
         if (dao.exists(user.getCredentials())) {
-            throw new PrimaryKeyViolationException("error!");
+            throw new PrimaryKeyViolationException( ERRORS.getString("error.user-already-exists"));
         }
+        
+        encryptUserCredentials(user);                
         dao.create(user);
-
+ 
+    }
+    
+    private  void encryptUserCredentials(User user) throws NoSuchAlgorithmException{  
+        Credentials credentials = user.getCredentials();      
+        String password = credentials.getPassword();
+        password = encrypter.encrypt(password);
+        credentials.setPassword(password);
+        user.setCredentials(credentials);
+    }
+    
+    private void authenticate(Credentials credentials) throws AccountNotFoundException{
+          if (dao.exists(credentials)) {
+                try{
+                 User user = dao.getExistingUser(credentials);
+                 String password = encrypter.encrypt(credentials.getPassword());
+                 
+                 if(user.getCredentials().getPassword().equals(password)) 
+                      return;
+                } catch (NoSuchAlgorithmException e){
+                    throw new AccountNotFoundException();
+                }
+           }
+          throw new AccountNotFoundException(ERRORS.getString("error.account.user-not-found"));
     }
 
     public void singIn(Credentials credentials) throws AccountNotFoundException {
         if (dao.exists(credentials)) {
+            authenticate(credentials);
             isAuth = true;
             user = dao.getExistingUser(credentials);
             

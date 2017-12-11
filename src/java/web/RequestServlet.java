@@ -14,7 +14,15 @@ import dao.VacationTypeDao;
 import exceptions.PrimaryKeyViolationException;
 import forms.RequestForm;
 import forms.core.FormParamProps;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.jms.Session;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 import javax.validation.ValidationException;
 import model.Request;
 import model.User;
@@ -56,6 +64,9 @@ public class RequestServlet extends AbstractServlet {
     private boolean byManager;
 
     FormParamProps paramProps;
+          // Or by injection.
+        @Resource(name = "mail/vdsecondary")
+        private Session session;
 
     @Override
     protected void doGet() throws ServletException, IOException {
@@ -63,10 +74,38 @@ public class RequestServlet extends AbstractServlet {
         request.setAttribute("formType", formType);
         request.setAttribute("action", action);
         paramProps = form.initParamProps();
+        
+       
+  
 
-        requestOwner = userService.getAuthUser();
-        request.setAttribute("reqOwner", requestOwner);
-
+        // Create email and headers.
+//        try{
+// 
+//        
+//        Message msg = new MimeMessage((MimeMessage) session);
+//        msg.setSubject("My Subject");
+//        msg.setRecipient(Message.RecipientType.TO,
+//                         new InternetAddress(
+//                         "vdeyneko@global-system.ru",
+//                         "Victor"));
+//        msg.setRecipient(Message.RecipientType.CC,
+//                         new InternetAddress(
+//                         "ForVacancies2005@yandex.ru",
+//                         "Ou"));
+//        msg.setFrom(new InternetAddress(
+//                    "vd.secondary@gmail.com",
+//                    "VD"));
+//
+//        // Body text.
+//        BodyPart messageBodyPart = new MimeBodyPart();
+//        messageBodyPart.setText("Here are the files.");
+//        Transport.send(msg);
+//
+//        requestOwner = userService.getAuthUser();
+//        request.setAttribute("reqOwner", requestOwner);
+//        } catch (Exception e) { e.printStackTrace();}
+//            
+            
         if (!action.contains(objListPath)) {
 
             request.setAttribute("newRequestDefaultDate", Request.getNewRequestDefaultDate());  //зададит текущую дату для инициализации календаря. иначе при "сохранении" будет ошибка

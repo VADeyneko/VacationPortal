@@ -27,6 +27,7 @@ public class LoginServlet extends AbstractServlet {
     @Override
     protected void doGet() throws ServletException, IOException {
        
+        
         if(request.getServletPath().equals("/logout")) {         
             service.signOut();
         }         
