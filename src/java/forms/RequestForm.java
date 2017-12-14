@@ -83,7 +83,7 @@ public class RequestForm implements Convertable<Request> {
         ownerComment = request.getParameter("ownerComment");
         managerComment = request.getParameter("managerComment");
 
-        if ((request.getParameter("id")!=null ) && !request.getParameter("id").equals("")  ){
+        if ( (request.getParameter("id")!=null ) && !request.getParameter("id").equals("")  ){
             id = Long.parseLong(request.getParameter("id"));
         }    
     }
@@ -160,8 +160,11 @@ public class RequestForm implements Convertable<Request> {
              throw new ValidationException(ERRORS.getString("error.validation.wrong-number"));
         }
     }
-    
-    
+
+    public String getManagerComment() {
+        return managerComment;
+    }
+     
     private void validate() throws ValidationException {
 
         assertNotEmpty(manager);
@@ -177,6 +180,7 @@ public class RequestForm implements Convertable<Request> {
 
     public  Request validateAndUpdate(Request request) throws ValidationException {
         Request reqConv = convertTo(Request.class);
+        validate(); //
         if(!request.getRequestState().getId().equals( reqConv.getRequestState().getId() ) ) {
             request.addCloneToHistory(request); //запоминаем клон самого себя до изменений
         }            
@@ -184,23 +188,7 @@ public class RequestForm implements Convertable<Request> {
         reqConv = null;// обнуляем ссылку для GC
         return request ;
     }
-    
-   public Request forwardToState(Request request) throws ValidationException {
-     assertNotEmpty(requestState);  
-     RequestState newState = (RequestState) parseParameter(requestStateDao, "requestState");
-     
-     if(request.getRequestState().getId()== 2 && newState.getId() == 4 )
-         assertNotEmpty(managerComment);  
-     
-     if(!request.getRequestState().getId().equals( newState.getId()) ) {
-            request.addCloneToHistory(request); //запоминаем клон самого себя до изменений
-        }
-     
-      request.setManagerComment(managerComment);
-      request.setRequestState(newState);   //устанавливаем НОВОЕ состояние
-      
-      return request;
-    }
+
 
     @Override
     public Request convertTo(Class<Request> cls) throws ValidationException {
@@ -266,6 +254,7 @@ public class RequestForm implements Convertable<Request> {
 
     }
     
+  
   
     public  void fillVacationTypeDropdown(){
        List<VacationType> vacationTypeList = vacationTypeDao.all();

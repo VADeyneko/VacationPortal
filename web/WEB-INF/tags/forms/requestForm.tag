@@ -49,7 +49,7 @@
   <common:topmenu/>
  
 			
-  <form action="<%= request.getContextPath()%>/${action}<c:if test="${notDefinedAllowed == false}">?id=${objToEdit.id}</c:if>"   method="post"  class="form-horizontal  ">      			      
+  <form action="<%= request.getContextPath()%>/${action}<c:if test="${notDefinedAllowed == null}">?id=${objToEdit.id}</c:if>"   method="post"  class="form-horizontal  ">      			      
     <div class="form-group ">        
       <div class="  col-xs-2">          
             <label  class=" control-label small" for="datepicker_dBegin">${requestDateBegin_header}</label>
@@ -146,8 +146,8 @@
       </div>
  
               
-     <div class="form-group  col-xs-12" >                            
-     <button class="btn">
+     <div class="form-group  col-xs-12">                            
+     <button class="btn"<c:if test="${error != null}">  disabled </c:if>  >
         <fmt:message key="label.${action.toLowerCase().substring(7)}"/>
     </button>     
      

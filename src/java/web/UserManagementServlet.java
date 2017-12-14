@@ -6,6 +6,7 @@ import dao.UserGroupDao;
 import exceptions.PrimaryKeyViolationException;
 import forms.UserForm;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -102,6 +103,9 @@ public class UserManagementServlet extends AbstractServlet {
             } catch (ValidationException d) {
                 request.setAttribute("error", d.getLocalizedMessage());
                  doGet();
+             } catch (NoSuchAlgorithmException v) {
+                request.setAttribute("error", v.getLocalizedMessage());
+                 doGet();     
             } catch (PrimaryKeyViolationException e ) {
                 request.setAttribute("error", errorMessage("error.account.user-already-exists"));
                  doGet();

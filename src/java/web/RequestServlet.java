@@ -14,17 +14,11 @@ import dao.VacationTypeDao;
 import exceptions.PrimaryKeyViolationException;
 import forms.RequestForm;
 import forms.core.FormParamProps;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.jms.Session;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
+import javax.mail.MessagingException;
 import javax.validation.ValidationException;
 import model.Request;
+import model.RequestState;
 import model.User;
 
 @WebServlet(name = "RequestServlet", urlPatterns = {"/requestList", "/requestEdit", "/requestDelete", "/requestInsert", "/requestDetails", "/requestListManager", "/requestForward"})
@@ -58,55 +52,27 @@ public class RequestServlet extends AbstractServlet {
     private String action;
     private final String objListPath = "requestList";
     private final String formType = "request";
-    private final String DISABLED = "disabled";
-    private final String READONLY = "readonly";
+ 
 
     private boolean byManager;
 
     FormParamProps paramProps;
-          // Or by injection.
-        @Resource(name = "mail/vdsecondary")
-        private Session session;
+      
+
 
     @Override
     protected void doGet() throws ServletException, IOException {
         action = request.getServletPath().substring(1);
         request.setAttribute("formType", formType);
         request.setAttribute("action", action);
-        paramProps = form.initParamProps();
-        
-       
-  
+    
+        requestOwner = userService.getAuthUser();
+        request.setAttribute("reqOwner", requestOwner);
 
-        // Create email and headers.
-//        try{
-// 
-//        
-//        Message msg = new MimeMessage((MimeMessage) session);
-//        msg.setSubject("My Subject");
-//        msg.setRecipient(Message.RecipientType.TO,
-//                         new InternetAddress(
-//                         "vdeyneko@global-system.ru",
-//                         "Victor"));
-//        msg.setRecipient(Message.RecipientType.CC,
-//                         new InternetAddress(
-//                         "ForVacancies2005@yandex.ru",
-//                         "Ou"));
-//        msg.setFrom(new InternetAddress(
-//                    "vd.secondary@gmail.com",
-//                    "VD"));
-//
-//        // Body text.
-//        BodyPart messageBodyPart = new MimeBodyPart();
-//        messageBodyPart.setText("Here are the files.");
-//        Transport.send(msg);
-//
-//        requestOwner = userService.getAuthUser();
-//        request.setAttribute("reqOwner", requestOwner);
-//        } catch (Exception e) { e.printStackTrace();}
-//            
+       
             
         if (!action.contains(objListPath)) {
+             paramProps = form.initParamProps();
 
             request.setAttribute("newRequestDefaultDate", Request.getNewRequestDefaultDate());  //зададит текущую дату для инициализации календаря. иначе при "сохранении" будет ошибка
 
@@ -122,6 +88,9 @@ public class RequestServlet extends AbstractServlet {
                         String toState = request.getParameter("toState");
                         request.setAttribute("newState", service.getRequestState(toState));
                     }
+                    
+                    if (!(objToEdit.getManager().equals(requestOwner) || objToEdit.getOwner().equals(requestOwner) ))
+                         forward( "auth/restricted");
                 }
 
             } catch (IllegalArgumentException d) {
@@ -156,13 +125,16 @@ public class RequestServlet extends AbstractServlet {
 
         if (action.equals(formType + "Forward")) {
             Request objToSave = service.findById(form.getId());
-            try {
-                objToSave = form.forwardToState(objToSave);
+            try {                
+                RequestState newState = service.getRequestState(form.getRequestState());
+                service.forwardToState(objToSave, newState, form.getManagerComment());
+                
                 service.checkIntersectionByOwner(objToSave, action);
                 service.update(objToSave);
-            } catch (ValidationException d) {
+                service.notifyUser(objToSave, request.getRequestURL()+ "?"  +request.getQueryString());
+            } catch (ValidationException | MessagingException d) {
                 request.setAttribute("error", d.getLocalizedMessage());
-                doGet();
+                doGet();                
             }
         }
 
@@ -171,6 +143,7 @@ public class RequestServlet extends AbstractServlet {
             try {
                 service.checkIntersectionByOwner(objToSave, action);
                 objToSave = form.validateAndUpdate(objToSave);
+                service.validateAgainstAppSettings(objToSave);
                 service.update(objToSave);
             } catch (ValidationException d) {
                 request.setAttribute("error", d.getLocalizedMessage());
@@ -182,6 +155,7 @@ public class RequestServlet extends AbstractServlet {
             try {
                 Request req = form.convertTo(Request.class);
                 service.checkIntersectionByOwner(req, action);
+                service.validateAgainstAppSettings(req);
                 service.register(req);
             } catch (ValidationException d) {
                 request.setAttribute("error", d.getLocalizedMessage());

@@ -1,4 +1,3 @@
- 
 package web;
 
 import dao.RequestDao;
@@ -21,46 +20,44 @@ import web.core.AbstractServlet;
  */
 @WebServlet(name = "ReportServlet", urlPatterns = {"/requestReport"})
 public class ReportServlet extends AbstractServlet {
- 
-   @Inject
-   protected HttpServletRequest request;
-   
+
+    @Inject
+    protected HttpServletRequest request;
+
     @Inject
     protected RequestForm form;
-   
-   private String action;
-   
-   private FormParamProps paramProps;
-   
+
+    private String action;
+
+    private FormParamProps paramProps;
+
     protected @EJB
     RequestDao dao;
 
-   
     @Override
     protected void doGet() throws ServletException, IOException {
-          action = request.getServletPath().substring(1);
-          request.setAttribute("action", action);
-          request.setAttribute("newRequestDefaultDate", Request.getNewRequestDefaultDate()); 
-          
-          request.setAttribute("notDefinedAllowed", true);
+        action = request.getServletPath().substring(1);
+        request.setAttribute("action", action);
+        request.setAttribute("newRequestDefaultDate", Request.getNewRequestDefaultDate());
 
-          form.fillRequestStateDropdown();
-          form.fillVacationTypeDropdown();
-          form.fillManagerDropdown();
-          form.fillOwnerDropdown();
-          
-          paramProps = form.initParamProps();
-          paramProps.setAllDisabled(false);   
-          paramProps.setHidden("ownerComment", true);
-          paramProps.setReadonly("requestOwner", false);
-          
-          request.setAttribute("formParamProps", paramProps);
-           
-          forward("report/requestReport");
+        request.setAttribute("notDefinedAllowed", true);
+
+        paramProps = form.initParamProps();
+        form.fillRequestStateDropdown();
+        form.fillVacationTypeDropdown();
+        form.fillManagerDropdown();
+        form.fillOwnerDropdown();
+
+        paramProps.setAllDisabled(false);
+        paramProps.setHidden("ownerComment", true);
+        paramProps.setReadonly("requestOwner", false);
+
+        request.setAttribute("formParamProps", paramProps);
+
+        forward("report/requestReport");
     }
-    
-    
-      @Override
+
+    @Override
     protected void doPost() throws ServletException, IOException {
         action = request.getServletPath().substring(1);
 
@@ -71,13 +68,12 @@ public class ReportServlet extends AbstractServlet {
             Long requestStateId = form.getRequestStateId();
             Date validatedDateBegin = form.getValidatedDateBegin();
             Date validatedDateEnd = form.getValidatedDateEnd();
-            
-            
+
             List<Request> reportList;
             reportList = dao.getReport(vacationTypeId, managerId, ownerId, requestStateId, validatedDateBegin, validatedDateEnd);
             request.setAttribute("isParameterDivHidden", "hidden");
             request.setAttribute("reportList", reportList);
         }
         doGet();
-    }    
+    }
 }

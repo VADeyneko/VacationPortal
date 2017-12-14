@@ -23,7 +23,7 @@ import model.User;
  *
  * @author admin
  */
-@WebFilter(filterName = "authFilter", servletNames = {"UserManagementServlet",  "RequestServlet",  "ReportServlet"})
+@WebFilter(filterName = "authFilter", servletNames = {"UserManagementServlet",  "RequestServlet",  "ReportServlet", "AppSettingsServlet"})
 public class authFilter implements Filter {
 
     @Inject
