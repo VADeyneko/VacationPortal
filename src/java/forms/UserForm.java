@@ -6,6 +6,7 @@ import dao.AbstractDao;
 import dao.UserDao;
 import dao.UserGroupDao;
  import forms.core.Convertable;
+import forms.core.FormParamProps;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 import model.User;
 import static forms.core.Validation.*;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ResourceBundle;
@@ -63,6 +65,8 @@ public class UserForm implements Convertable<User> {
     
    protected long id;
     
+   private FormParamProps paramProps;
+   
     @PostConstruct
     public void onPostConstruct() {
         name = request.getParameter("name");
@@ -72,15 +76,9 @@ public class UserForm implements Convertable<User> {
         confirmation = request.getParameter("password-confirmation");
        
         
-      if (!request.getParameter("id").equals("") )
+      if ( (request.getParameter("id")!=null ) && !request.getParameter("id").equals("")  )
                 id = Long.parseLong(request.getParameter("id"));      
-        
-//      if ( request.getParameter("userGroup") != null)
-//          userGroup = userGroupService.findById(Integer.parseInt(request.getParameter("userGroup")));
-//        
-//      if ( request.getParameter("manager") != null)
-//          manager =  service.findById(Long.parseLong(request.getParameter("manager")) );
-//   
+ 
          userGroup = (UserGroup) parseParameter(ug_dao, "userGroup");
          manager = (User) parseParameter(dao, "manager");
     }
@@ -134,7 +132,7 @@ public class UserForm implements Convertable<User> {
     }
     
     // метод добавлен сюда, т.к. есть валидация
-    public void validateAndUpdate(User user) throws AccountNotFoundException{
+    public void validateAndUpdate(User user) throws AccountNotFoundException, NoSuchAlgorithmException{
                validate();
                user.setName( name );
                user.setLastname(lastname);
@@ -177,4 +175,18 @@ public class UserForm implements Convertable<User> {
     }
 
         
+    public FormParamProps initParamProps(){
+        if (paramProps == null){
+        paramProps = new FormParamProps();
+        paramProps.add("name");
+        paramProps.add("lastname");
+        paramProps.add("email");
+        paramProps.add("password");
+        paramProps.add("confirmation");
+        paramProps.add("userGroup");
+        paramProps.add("manager");       
+        }
+        
+        return paramProps;
+    }
 }

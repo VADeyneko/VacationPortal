@@ -5,6 +5,7 @@ import beans.UserService;
 import dao.UserGroupDao;
 import exceptions.PrimaryKeyViolationException;
 import forms.UserForm;
+import forms.core.FormParamProps;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -18,7 +19,7 @@ import javax.validation.ValidationException;
 import model.User;
 import model.UserGroup;
 
-@WebServlet(name = "UserManagementServlet", urlPatterns = {"/userManagement", "/userEdit", "/userDelete", "/userInsert", "/userDetails"})
+@WebServlet(name = "UserManagementServlet", urlPatterns = {"/userManagement", "/userEdit", "/userDelete", "/userInsert", "/userDetails", "/changePassword"})
 public class UserManagementServlet extends AbstractServlet {
 
     @Inject
@@ -36,6 +37,7 @@ public class UserManagementServlet extends AbstractServlet {
     private String action;
     private final String objListPath = "userManagement";
     private final String formType ="user";
+    private FormParamProps paramProps;
 
     @Override
     protected void doGet() throws ServletException, IOException {
@@ -50,11 +52,27 @@ public class UserManagementServlet extends AbstractServlet {
 
         //если не userManagement , то значит CRUD операция
         if (!action.equals(objListPath)) {
+             paramProps = form.initParamProps();
+             
              fillDropDownControls();           
              request.setAttribute("action", action);     
              
             if (request.getParameter("id") != null) { //для редактирования и удаления
-                User objToEdit = service.findById(form.getId());
+                User objToEdit;
+                
+                if( request.getParameter("id").isEmpty()){
+                  objToEdit =  (User)(request.getSession().getAttribute("sessionUser")); //if id is empty user can change the password of him/herself
+                       paramProps.setReadonly("lastname", true); 
+                       paramProps.setReadonly("name", true);
+                       paramProps.setReadonly("email", true);
+                       paramProps.setHidden("manager", true);                        
+                       paramProps.setHidden("userGroup", true);
+                       
+                        
+                       request.setAttribute("formParamProps", paramProps);
+                }else {
+                  objToEdit = service.findById(form.getId());
+                }                
                 request.setAttribute("objToEdit", objToEdit);
                 request.setAttribute("dsbl_all", action.equals(formType+"Delete") ? "disabled": ""); //управление доступностью ВСЕХ полей для удаления
                 request.setAttribute("detailsCollection", form.getDetailSummary(objToEdit));                   

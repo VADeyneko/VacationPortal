@@ -42,6 +42,7 @@
    <div class="form-group ">
     <input type="text"
            name="name"
+           ${formParamProps.getProps("name")}
            ${dsbl_all}
            class="form-control"
            placeholder="${namePlaceholder}"
@@ -51,6 +52,7 @@
     <div class="form-group">
     <input type="text"
            name="lastname"
+            ${formParamProps.getProps("lastname")}
            ${dsbl_all}
            class="form-control"
            placeholder="${lastnamePlaceholder}"
@@ -61,6 +63,7 @@
     <div class="form-group">
     <input type="email"
            name="email"
+             ${formParamProps.getProps("email")}
            ${dsbl_all}
            class="form-control"
            placeholder="${emailPlaceholder}"
@@ -71,6 +74,7 @@
     <div class="form-group">
     <input type="password"
            name="password"
+           ${formParamProps.getProps("password")}
             ${dsbl_all}
            class="form-control"
            placeholder="${passwordPlaceholder}"           
@@ -81,6 +85,7 @@
     <div class="form-group">
     <input type="password"
            name="password-confirmation"
+            ${formParamProps.getProps("password-confirmation")}
             ${dsbl_all}
            class="form-control"
            placeholder="${passwordConfirmationPlaceholder}"
@@ -89,18 +94,18 @@
     </div>
  
            
-    <div class="form-group" >    
+    <div class="form-group" ${formParamProps.getProps("userGroup")}>    
         <label for="Select1" >${userGroupLabelName} :</label>         
-        <select  id="Select1" class="form-control"    ${dsbl_all}  name="userGroup"   >
+        <select  id="Select1" class="form-control"    ${dsbl_all}  name="userGroup"  ${formParamProps.getProps("userGroup")}   >
          <c:forEach var="userGroup"  items="${userGroupList}">                      
             <option value="${userGroup.id}" ${userGroup.id == objToEdit.userGroup.id ? 'selected="selected"' : ''}>${userGroup.groupLabelName}</option>
          </c:forEach>
         </select>             
     </div>      
         
-     <div class="form-group" >    
+     <div class="form-group" ${formParamProps.getProps("manager")} >    
         <label for="Select2" >${managerSelectLabelName} :</label>         
-        <select  id="Select2" class="form-control"    ${dsbl_all}  name="manager"  >
+        <select  id="Select2" class="form-control"    ${dsbl_all}  name="manager"  ${formParamProps.getProps("manager")}  >
          <c:forEach var="manager"  items="${managerList}">                      
             <option value="${manager.id}" ${manager.id == objToEdit.manager.id ? 'selected="selected"' : ''}>${manager.getFullName()}</option>
          </c:forEach>

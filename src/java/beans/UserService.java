@@ -118,7 +118,8 @@ public class UserService implements Serializable {
         return dao.find(id);
     }
 
-    public void update(User user) {
+    public void update(User user) throws NoSuchAlgorithmException {
+        encryptUserCredentials(user);   
         dao.update(user);
        if(this.user.getCredentials() == user.getCredentials())
                  this.user = user;        
