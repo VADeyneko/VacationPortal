@@ -21,7 +21,7 @@ import model.User;
 
 /**
  *
- * @author admin
+ * @author Victor Deyneko <VADeyneko@gmail.com>
  */
 @WebFilter(filterName = "authFilter", servletNames = {"UserManagementServlet",  "RequestServlet",  "ReportServlet", "AppSettingsServlet"})
 public class authFilter implements Filter {

@@ -30,7 +30,7 @@ import model.VacationType;
 
 /**
  *
- * @author admin
+ * @author Victor Deyneko <VADeyneko@gmail.com>
  */
 @Named
 @RequestScoped

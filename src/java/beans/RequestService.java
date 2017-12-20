@@ -100,7 +100,7 @@ public class RequestService implements Serializable {
         if(request.getDateBegin().before(settings.getdPeriodBegin()))
               throw new ValidationException (ERRORS.getString("error.the-request-lies-out-of-allowed-period"));
         
-        if(request.getDateEnd().after(settings.getdPeriodBegin()))
+        if(request.getDateEnd().after(settings.getdPeriodEnd()))
               throw new ValidationException (ERRORS.getString("error.the-request-lies-out-of-allowed-period"));
 
     }

@@ -3,9 +3,19 @@
     Created on : 08.11.2017, 14:23:17
     Author     : admin
 --%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@tag description="put the tag description here" pageEncoding="UTF-8"%>
- 
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setBundle basename="resources.labels" />
+
+<c:set var="login_lbl">
+    <fmt:message key="label.sign-in"/>
+</c:set> 
+<c:set var="logout_lbl">
+    <fmt:message key="label.sign-out"/>
+</c:set> 
+  
    <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -19,8 +29,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="login">Sign in</a></li>
-            <li><a href="logout">Sing out</a></li>         
+              <li><a href="logout" ><span class="glyphicon glyphicon-log-in"></span> ${logout_lbl}</a></li>       
           </ul>
          
         </div>

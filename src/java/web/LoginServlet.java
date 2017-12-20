@@ -1,6 +1,5 @@
 package web;
 
-import beans.UserGroupService;
 import web.core.AbstractServlet;
 import beans.UserService;
 import forms.LoginForm;
