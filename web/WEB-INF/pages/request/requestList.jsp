@@ -48,7 +48,7 @@
 
     <jsp:body>
         <common:topmenu/>
-        <div class="alert ${action.equals ('requestList') ? 'alert-warning' : 'alert-success' } "> <h3>${action.equals ('requestList') ? title : titleManager }</h3> </div>
+        <div class="alert ${action.equals ('requestList') ? 'alert-warning' : 'alert-success' } "> <h4>${action.equals ('requestList') ? title : titleManager }</h4> </div>
     
     <c:if test="${action.equals ('requestList') }">
      <div><forms:insert/></div>
