@@ -1,5 +1,3 @@
-# VacationPortal
-Employee Leave Request Tracking Portal  (Система учета заявлений на отпуск)
 
 This is portal for annual leave requests tracking and management.
 
@@ -15,9 +13,15 @@ Functionality highlights:
 - other 
 
 Technologies used:
+- Java 7
 - Java Enterprise Edition
 - Glassfish Server 4.1
 - Java DB ()
 - JSP
 - JQuery
 - Bootstrap 3
+
+The project requires DataAccessLayer library (tightly coupled) that is 
+available as seprarate repository (https://github.com/VADeyneko/Data-Access-Layer)
+
+Please consider .sql data population scripts required for portal start
